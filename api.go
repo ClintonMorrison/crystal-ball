@@ -121,7 +121,7 @@ func GetPricesByDayForStock(symbol string) map[string]StockSummary {
 		panic(err)
 	}
 
-	return StocksByDay(stocks)
+	return GroupStocksByDay(stocks)
 }
 
 func GetPricesByDayForStocks(symbols []string) DailyStocksBySymbol {

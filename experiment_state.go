@@ -15,7 +15,7 @@ type ExperimentState struct {
 }
 
 func (state ExperimentState) lookupPrice(symbol string, date time.Time) float64 {
-	price := GetDailySummaryForStock(symbol, date).Close // state.Params.DailyStocksBySymbol[symbol][dateString].Close
+	price := GetDailyStockSummaryData().forSymbolOnDay(symbol, date).Close // GetDailySummaryForStock(symbol, date).Close // state.Params.DailyStocksBySymbol[symbol][dateString].Close
 
 	tries := 0
 
