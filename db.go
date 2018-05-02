@@ -22,7 +22,7 @@ func getCollection(session *mgo.Session, collection string) *mgo.Collection {
 
 // Companies
 func getCompaniesCollection(session *mgo.Session) *mgo.Collection {
-	return getCollection(session,"companies")
+	return getCollection(session, "companies")
 }
 
 func GetCompanies() []Company {
@@ -34,7 +34,6 @@ func GetCompanies() []Company {
 	c.Find(nil).All(&results)
 	return results
 }
-
 
 // Stock prices
 func getStockyDailyCollection(session *mgo.Session) *mgo.Collection {

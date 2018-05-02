@@ -1,8 +1,8 @@
 package main
 
 import (
-	"time"
 	"fmt"
+	"time"
 )
 
 type Portfolio map[string]float64 // symbol => quantity held
@@ -21,7 +21,7 @@ func (state ExperimentState) lookupPrice(symbol string, date time.Time) float64 
 
 	for price == 0 && tries < 10 {
 		tries++
-		price = GetDailySummaryForStock(symbol, date.AddDate(0, 0, -1 * tries)).Close
+		price = GetDailySummaryForStock(symbol, date.AddDate(0, 0, -1*tries)).Close
 	}
 
 	return price
@@ -67,11 +67,13 @@ func (state ExperimentState) reportSummary() {
 	fmt.Printf("\n   Profit: %.2f%%\n", change/initialValue*100.0)
 }
 
-
-func (state ExperimentState) applyOrder(order Order) {
+func (state ExperimentState) applyOrder(order Order) ExperimentState {
 	pricePerShare := state.lookupPrice(order.Symbol, state.Day)
 	if pricePerShare == 0 {
-		panic("Price is 0 for " + order.Symbol + ", " + TimeToString(state.Day))
+		fmt.Println("WARN: Skipping trade. Price is 0 for " + order.Symbol + ", " + TimeToString(state.Day))
+
+		// Stock no longer exists? do nothing
+		return state
 	}
 	multiplier := 1.0
 
@@ -85,6 +87,15 @@ func (state ExperimentState) applyOrder(order Order) {
 	if newQuantity >= 0 && newBalance >= 0 {
 		order.reportCost(cost)
 		state.Portfolio[order.Symbol] = newQuantity
-		state.Balance = newBalance
+		if newQuantity == 0 {
+			delete(state.Portfolio, order.Symbol)
+		}
+
+		if state.Params.TransactionFee > 0 {
+			fmt.Println("applying transaction fee of", state.Params.TransactionFee)
+		}
+		state.Balance = newBalance - state.Params.TransactionFee
 	}
+
+	return state
 }

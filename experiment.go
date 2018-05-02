@@ -6,17 +6,18 @@ import (
 )
 
 type ExperimentParams struct {
-	InitialBalance      float64
-	StartDay            time.Time
-	EndDay              time.Time
-	CompaniesBySymbol	  map[string]Company
+	InitialBalance    float64
+	StartDay          time.Time
+	EndDay            time.Time
+	TransactionFee    float64
+	CompaniesBySymbol map[string]Company
 }
 
 type Strategy func(state *ExperimentState) []Order
 
 type Experiment struct {
-	params  ExperimentParams
-	state   ExperimentState
+	params   ExperimentParams
+	state    ExperimentState
 	strategy Strategy
 }
 
@@ -43,7 +44,7 @@ func (experiment Experiment) Run() {
 		fmt.Println("", experiment.state.Day.Format("2006-01-02"))
 		orders := experiment.strategy(&experiment.state)
 		for _, order := range orders {
-			experiment.state.applyOrder(order)
+			experiment.state = experiment.state.applyOrder(order)
 		}
 
 		experiment.state.reportCurrentState()
