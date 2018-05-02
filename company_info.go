@@ -1,4 +1,4 @@
-package trading
+package main
 
 import (
 	"encoding/csv"
@@ -82,4 +82,14 @@ func GetSymbols(companies map[string]Company) []string {
 	}
 
 	return keys
+}
+
+func GetCompaniesBySmybol() map[string]Company {
+	companies := GetCompanies()
+	companiesBySymbol := make(map[string]Company, len(companies))
+	for _, company := range companies {
+		companiesBySymbol[company.Symbol] = company
+	}
+
+	return companiesBySymbol
 }

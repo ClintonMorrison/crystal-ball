@@ -2,44 +2,39 @@ package main
 
 import (
 	"fmt"
-	"time"
-	"stock-analysis/trading"
 	"math"
 )
 
-func parseDay(s string) time.Time {
-	t, _ := time.Parse("2006-01-02", s)
-	return t
-}
 
-func doNothing(state trading.ExperimentState) []trading.Order {
-	var orders []trading.Order
+
+func doNothing(state ExperimentState) []Order {
+	var orders []Order
 	return orders
 }
 
-func buyAll(state *trading.ExperimentState) []trading.Order {
-	var orders []trading.Order
-	orders = append(orders, trading.Order{trading.BUY, "CZFC", 1.0})
-	allStocks := trading.GetAvailableStocksForDay(state.Day)
+func buyAll(state *ExperimentState) []Order {
+	var orders []Order
+	orders = append(orders, Order{BUY, "CZFC", 1.0})
+	allStocks := GetStockSummariesForDay(state.Day)
 	fmt.Println(len(allStocks))
 	return orders
 }
 
-func scoreStock(stock trading.Stock) float64 {
+func scoreStock(stock StockSummary) float64 {
 	percentChange := (stock.Close - stock.Open) / stock.Close
 	weightedChange := percentChange * 100.0 * math.Pow(stock.Volume, 0.1)
 	return weightedChange
 }
 
 
-func tradeByScore(state *trading.ExperimentState) []trading.Order {
-	var orders []trading.Order
-	stocksBySymbol := trading.GetAvailableStocksBySymbol(state.Day)
+func tradeByScore(state *ExperimentState) []Order {
+	var orders []Order
+	stocksBySymbol := GetAvailableStocksBySymbol(state.Day)
 
-	maxScoreStock := trading.Stock{}
+	maxScoreStock := StockSummary{}
 	maxScore := 0.0
 
-	minScoreStock := trading.Stock{}
+	minScoreStock := StockSummary{}
 	minScore := 0.0
 
 	for _, stock := range stocksBySymbol {
@@ -60,23 +55,23 @@ func tradeByScore(state *trading.ExperimentState) []trading.Order {
 
 	if len(maxScoreStock.Symbol) > 0 {
 		fmt.Printf("max score was %.2f [$%.2f --> $%.2f]\n", maxScore, maxScoreStock.Open, maxScoreStock.Close)
-		orders = append(orders, trading.Order{trading.BUY, maxScoreStock.Symbol, 100.0 / maxScoreStock.Close })
+		orders = append(orders, Order{BUY, maxScoreStock.Symbol, 100.0 / maxScoreStock.Close })
 	}
 
 	if len(minScoreStock.Symbol) > 0 {
 		fmt.Printf("min score was %.2f [$%.2f --> $%.2f]\n", minScore, minScoreStock.Open, minScoreStock.Close)
-		orders = append(orders, trading.Order{trading.SELL, minScoreStock.Symbol, state.Portfolio[minScoreStock.Symbol] })
+		orders = append(orders, Order{SELL, minScoreStock.Symbol, state.Portfolio[minScoreStock.Symbol] })
 	}
 
 	return orders
 }
 
 
-func buyBiggestDailyChange(state *trading.ExperimentState) []trading.Order {
-	var orders []trading.Order
-	allStocks := trading.GetAvailableStocksForDay(state.Day)
+func buyBiggestDailyChange(state *ExperimentState) []Order {
+	var orders []Order
+	allStocks := GetStockSummariesForDay(state.Day)
 
-	maxIncreaseStock := trading.Stock{}
+	maxIncreaseStock := StockSummary{}
 	maxIncrease := 0.0
 
 	for _, stock := range allStocks {
@@ -89,15 +84,15 @@ func buyBiggestDailyChange(state *trading.ExperimentState) []trading.Order {
 
 	if len(maxIncreaseStock.Symbol) > 0 {
 		fmt.Printf("max increase was %%%.2f [$%.2f --> $%.2f]\n", maxIncrease * 100, maxIncreaseStock.Open, maxIncreaseStock.Close)
-		orders = append(orders, trading.Order{trading.BUY, maxIncreaseStock.Symbol, 10.0})
+		orders = append(orders, Order{BUY, maxIncreaseStock.Symbol, 10.0})
 	}
 
-	// orders = append(orders, trading.Order{trading.BUY, "CZFC", 1.0})
+	// orders = append(orders, Order{BUY, "CZFC", 1.0})
 	return orders
 }
 
 func main() {
-	companiesBySymbol := trading.GetCompaniesBySmybol()
+	companiesBySymbol := GetCompaniesBySmybol()
 
 	var symbols []string
 	for _, company := range companiesBySymbol {
@@ -106,16 +101,14 @@ func main() {
 
 	fmt.Println(symbols)
 
-	allData := trading.GetStocksDailyData()
+	// allData := GetAllDailyStockPrices()
 	
-	fmt.Println(len(allData))
-	/*
+	// fmt.Println(len(allData))
 
-	params := trading.ExperimentParams{}
+	params := ExperimentParams{}
 	params.InitialBalance = 1000
-	params.StartDay = parseDay("2015-11-01")
-	params.EndDay = parseDay("2018-02-01")
+	params.StartDay = ParseDay("2015-11-01")
+	params.EndDay = ParseDay("2018-02-01")
 	params.CompaniesBySymbol = companiesBySymbol
-	trading.RunExperiment(params, tradeByScore)
-	*/
+	RunExperiment(params, tradeByScore)
 }

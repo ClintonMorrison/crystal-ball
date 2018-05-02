@@ -1,4 +1,4 @@
-package main
+package scripts
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ func SaveStockData(symbol string) {
 		panic(err)
 	}
 
-	trading.BatchAddStockDay(stockDays)
+	trading.BatchAddStockDailySummary(stockDays)
 }
 
 func SaveCompanies(companiesBySymbol map[string]trading.Company) {

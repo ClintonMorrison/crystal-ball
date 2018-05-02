@@ -1,4 +1,4 @@
-package trading
+package main
 
 import (
 	"encoding/json"
@@ -65,8 +65,8 @@ func request(f string, symbol string, outputsize string) ([]byte, error) {
 	return body, nil
 }
 
-func TransformRawStock(symbol string, date string, rawStock RawDailyStock) Stock {
-	stock := Stock{}
+func TransformRawStock(symbol string, date string, rawStock RawDailyStock) StockSummary {
+	stock := StockSummary{}
 	parsedDate, _ := time.Parse("2006-01-02", date)
 	open, _ := strconv.ParseFloat(rawStock.Open, 64)
 	high, _ := strconv.ParseFloat(rawStock.High, 64)
@@ -91,7 +91,7 @@ func TransformRawStock(symbol string, date string, rawStock RawDailyStock) Stock
 	return stock
 }
 
-func GetDailyStockData(symbol string) ([]Stock, error) {
+func GetDailyStockData(symbol string) ([]StockSummary, error) {
 	body, err := request("TIME_SERIES_DAILY_ADJUSTED", symbol, "full") // "full" "compact"
 
 	if err != nil {
@@ -104,7 +104,7 @@ func GetDailyStockData(symbol string) ([]Stock, error) {
 		return nil, err
 	}
 
-	var stocks []Stock
+	var stocks []StockSummary
 
 	for date, rawStock := range response.TimeSeriesDaily {
 		stock := TransformRawStock(response.MetaData.Symbol, date, rawStock)
@@ -115,7 +115,7 @@ func GetDailyStockData(symbol string) ([]Stock, error) {
 	return stocks, nil
 }
 
-func GetPricesByDayForStock(symbol string) map[string]Stock {
+func GetPricesByDayForStock(symbol string) map[string]StockSummary {
 	stocks, err := GetDailyStockData(symbol)
 	if err != nil {
 		panic(err)

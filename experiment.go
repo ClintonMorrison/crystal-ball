@@ -1,4 +1,4 @@
-package trading
+package main
 
 import (
 	"fmt"
@@ -46,13 +46,13 @@ func initialStateFromParams(params ExperimentParams) *ExperimentState {
 }
 
 func lookupPrice(state *ExperimentState, symbol string, date time.Time) float64 {
-	price := GetStockForDay(symbol, date).Close // state.Params.DailyStocksBySymbol[symbol][dateString].Close
+	price := GetDailySummaryForStock(symbol, date).Close // state.Params.DailyStocksBySymbol[symbol][dateString].Close
 
 	tries := 0
 
 	for price == 0 && tries < 10 {
 		tries++
-		price = GetStockForDay(symbol, date.AddDate(0, 0, -1 * tries)).Close
+		price = GetDailySummaryForStock(symbol, date.AddDate(0, 0, -1 * tries)).Close
 	}
 
 	return price
