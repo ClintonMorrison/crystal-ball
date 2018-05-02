@@ -19,11 +19,6 @@ const (
 	SELL
 )
 
-type Order struct {
-	Action
-	Symbol   string
-	Quantity float64
-}
 
 type Portfolio map[string]float64 // symbol => quantity held
 
@@ -34,7 +29,7 @@ type ExperimentState struct {
 	Params ExperimentParams
 }
 
-type Stategy func(state *ExperimentState) []Order
+type Strategy func(state *ExperimentState) []Order
 
 func initialStateFromParams(params ExperimentParams) *ExperimentState {
 	state := ExperimentState{}
@@ -45,7 +40,7 @@ func initialStateFromParams(params ExperimentParams) *ExperimentState {
 	return &state
 }
 
-func lookupPrice(state *ExperimentState, symbol string, date time.Time) float64 {
+func (state ExperimentState) lookupPrice(symbol string, date time.Time) float64 {
 	price := GetDailySummaryForStock(symbol, date).Close // state.Params.DailyStocksBySymbol[symbol][dateString].Close
 
 	tries := 0
@@ -58,7 +53,7 @@ func lookupPrice(state *ExperimentState, symbol string, date time.Time) float64 
 	return price
 }
 
-func reportState(state *ExperimentState) {
+func (state ExperimentState) reportCurrentState() {
 	fmt.Printf("  balance: $%.2f\n", state.Balance)
 	for symbol, qty := range state.Portfolio {
 		if qty > 0 {
@@ -67,20 +62,20 @@ func reportState(state *ExperimentState) {
 	}
 }
 
-func getPortfolioValue(state *ExperimentState) float64 {
+func (state ExperimentState) getPortfolioValue() float64 {
 	total := 0.0
 	for symbol, qty := range state.Portfolio {
-		total += qty * lookupPrice(state, symbol, state.Day)
+		total += qty * state.lookupPrice(symbol, state.Day)
 	}
 
 	return total
 }
 
-func getTotalValue(state *ExperimentState) float64 {
-	return state.Balance + getPortfolioValue(state)
+func (state ExperimentState) getTotalValue() float64 {
+	return state.Balance + state.getPortfolioValue()
 }
 
-func reportSummary(state *ExperimentState) {
+func (state ExperimentState) reportSummary() {
 	fmt.Println("\n-----------\n\nSUMMARY")
 	fmt.Printf("  balance: $%.2f\n", state.Balance)
 	for symbol, qty := range state.Portfolio {
@@ -88,7 +83,7 @@ func reportSummary(state *ExperimentState) {
 	}
 
 	initialValue := state.Params.InitialBalance
-	finalValue := getTotalValue(state)
+	finalValue := state.getTotalValue()
 	change := finalValue - initialValue
 
 	fmt.Println()
@@ -96,24 +91,11 @@ func reportSummary(state *ExperimentState) {
 	fmt.Printf("    Final: $%.2f\n", finalValue)
 	fmt.Printf("   Change: $%.2f\n", change)
 	fmt.Printf("\n   Profit: %.2f%%\n", change/initialValue*100.0)
-
 }
 
-func reportOrder(order Order, cost float64) {
-	var action string
-	switch order.Action {
-	case BUY:
-		action = "BUY"
-	case SELL:
-		action = "SELL"
-	}
 
-	fmt.Printf("   --> %s x %.2f shares of %s for $%.2f\n", action, order.Quantity, order.Symbol, cost)
-
-}
-
-func applyOrder(state *ExperimentState, order Order) {
-	pricePerShare := lookupPrice(state, order.Symbol, state.Day)
+func (state ExperimentState) applyOrder(order Order) {
+	pricePerShare := state.lookupPrice(order.Symbol, state.Day)
 	if pricePerShare == 0 {
 		panic("Price is 0 for " + order.Symbol + ", " + TimeToString(state.Day))
 	}
@@ -127,27 +109,41 @@ func applyOrder(state *ExperimentState, order Order) {
 	cost := order.Quantity * pricePerShare
 	newBalance := state.Balance - (cost * multiplier)
 	if newQuantity >= 0 && newBalance >= 0 {
-		reportOrder(order, cost)
+		order.reportCost(cost)
 		state.Portfolio[order.Symbol] = newQuantity
 		state.Balance = newBalance
 	}
 }
 
-func RunExperiment(params ExperimentParams, stategy Stategy) {
-	state := initialStateFromParams(params)
-	for state.Day.Before(params.EndDay) {
+type Experiment struct {
+	params  ExperimentParams
+	state   ExperimentState
+	strategy Strategy
+}
+
+func CreateExperiment(params ExperimentParams, strategy Strategy) *Experiment {
+	return &Experiment{
+		params,
+		*initialStateFromParams(params),
+		strategy,
+	}
+}
+
+
+func (experiment Experiment) Run() {
+	for experiment.state.Day.Before(experiment.params.EndDay) {
 		fmt.Println("")
-		fmt.Println("", state.Day.Format("2006-01-02"))
-		orders := stategy(state)
+		fmt.Println("", experiment.state.Day.Format("2006-01-02"))
+		orders := experiment.strategy(&experiment.state)
 		for _, order := range orders {
-			applyOrder(state, order)
+			experiment.state.applyOrder(order)
 		}
 
-		reportState(state)
+		experiment.state.reportCurrentState()
 
-		state.Day = state.Day.Add(time.Hour * 24)
+		experiment.state.Day = experiment.state.Day.Add(time.Hour * 24)
 	}
 
-	reportSummary(state)
+	experiment.state.reportSummary()
 	fmt.Println("\n\nDONE")
 }

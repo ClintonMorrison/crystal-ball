@@ -110,5 +110,6 @@ func main() {
 	params.StartDay = ParseDay("2015-11-01")
 	params.EndDay = ParseDay("2018-02-01")
 	params.CompaniesBySymbol = companiesBySymbol
-	RunExperiment(params, tradeByScore)
+	experiment := CreateExperiment(params, tradeByScore)
+	experiment.Run()
 }
