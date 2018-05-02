@@ -2,6 +2,13 @@ package main
 
 import "fmt"
 
+type Action int
+
+const (
+	BUY Action = iota
+	SELL
+)
+
 type Order struct {
 	Action
 	Symbol   string
