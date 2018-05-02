@@ -9,7 +9,7 @@ type ExperimentParams struct {
 	InitialBalance      float64
 	StartDay            time.Time
 	EndDay              time.Time
-	DailyStocksBySymbol DailyStocksBySymbol
+	CompaniesBySymbol	  map[string]Company
 }
 
 type Action int
@@ -46,11 +46,13 @@ func initialStateFromParams(params ExperimentParams) *ExperimentState {
 }
 
 func lookupPrice(state *ExperimentState, symbol string, date time.Time) float64 {
-	dateString := TimeToString(date)
-	price := state.Params.DailyStocksBySymbol[symbol][dateString].Close
+	price := GetStockForDay(symbol, date).Close // state.Params.DailyStocksBySymbol[symbol][dateString].Close
 
-	if price == 0 && !date.IsZero() {
-		return lookupPrice(state, symbol, date.Add(-time.Hour*24))
+	tries := 0
+
+	for price == 0 && tries < 10 {
+		tries++
+		price = GetStockForDay(symbol, date.AddDate(0, 0, -1 * tries)).Close
 	}
 
 	return price
@@ -59,7 +61,9 @@ func lookupPrice(state *ExperimentState, symbol string, date time.Time) float64 
 func reportState(state *ExperimentState) {
 	fmt.Printf("  balance: $%.2f\n", state.Balance)
 	for symbol, qty := range state.Portfolio {
-		fmt.Printf("  %7s: %.2f\n", symbol, qty)
+		if qty > 0 {
+			fmt.Printf("  %7s: %.2f\n", symbol, qty)
+		}
 	}
 }
 
@@ -134,7 +138,6 @@ func RunExperiment(params ExperimentParams, stategy Stategy) {
 	for state.Day.Before(params.EndDay) {
 		fmt.Println("")
 		fmt.Println("", state.Day.Format("2006-01-02"))
-
 		orders := stategy(state)
 		for _, order := range orders {
 			applyOrder(state, order)

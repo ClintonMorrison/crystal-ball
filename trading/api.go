@@ -92,7 +92,7 @@ func TransformRawStock(symbol string, date string, rawStock RawDailyStock) Stock
 }
 
 func GetDailyStockData(symbol string) ([]Stock, error) {
-	body, err := request("TIME_SERIES_DAILY_ADJUSTED", symbol, "compact") // "full" "compact"
+	body, err := request("TIME_SERIES_DAILY_ADJUSTED", symbol, "full") // "full" "compact"
 
 	if err != nil {
 		return nil, err

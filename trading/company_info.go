@@ -22,7 +22,7 @@ type Company struct {
 	SummaryQuote string
 }
 
-func GetCompanies() map[string]Company {
+func ParseCompaniesFromCSV() map[string]Company {
 	companies := make(map[string]Company)
 
 	file, err := os.Open("data/companylist.csv")

@@ -22,7 +22,7 @@ type StockInDB struct {
 }
 
 func connect() *mgo.Session {
-	session, err := mgo.Dial("localhost:27017")
+	session, err := mgo.Dial(MongoURL)
 	if err != nil {
 		panic(err)
 	}
@@ -38,6 +38,26 @@ func getCompaniesCollection(session *mgo.Session) *mgo.Collection {
 	return session.DB("trading").C("companies")
 }
 
+func GetCompanies() []Company {
+	session := connect()
+	defer session.Close()
+	c := getCompaniesCollection(session)
+
+	var results []Company
+	c.Find(nil).All(&results)
+	return results
+}
+
+func GetCompaniesBySmybol() map[string]Company {
+	companies := GetCompanies()
+	companiesBySymbol := make(map[string]Company, len(companies))
+	for _, company := range companies {
+		companiesBySymbol[company.Symbol] = company
+	}
+
+	return companiesBySymbol
+}
+
 func GetStocksDailyData() []Stock {
 	session := connect()
 	defer session.Close()
@@ -46,6 +66,85 @@ func GetStocksDailyData() []Stock {
 	var results []Stock
 	c.Find(nil).All(&results)
 	return results
+}
+
+var cachedStocksForDay map[string][]Stock
+
+func GetAvailableStocksForDay(date time.Time) []Stock {
+	if cachedStocksForDay == nil {
+		cachedStocksForDay = make(map[string][]Stock)
+	}
+	cachedResult, cacheHit := cachedStocksForDay[TimeToString(date)]
+	if cacheHit {
+		fmt.Println("****** CACHE HIT")
+		return cachedResult
+	}
+
+
+	session := connect()
+	defer session.Close()
+	c := getStockyDailyCollection(session)
+
+	var results []Stock
+	c.Find(bson.M{"date": date}).Sort("symbol").All(&results)
+	cachedStocksForDay[TimeToString(date)] = results
+	return results
+}
+
+func GetAvailableStocksBySymbol(date time.Time) map[string]Stock {
+	stocks := GetAvailableStocksForDay(date)
+	stocksBySmybol := make(map[string]Stock)
+	for _, stock := range stocks {
+		stocksBySmybol[stock.Symbol] = stock
+	}
+
+	return stocksBySmybol
+}
+
+func GetPricesForStock(symbol string) []Stock {
+	session := connect()
+	defer session.Close()
+	c := getStockyDailyCollection(session)
+
+	var results []Stock
+	c.Find(bson.M{"symbol": symbol}).Sort("date").All(&results)
+	return results
+}
+
+var cachedStockForDay map[string]Stock
+
+func GetStockForDay(symbol string, time time.Time) Stock {
+	if cachedStockForDay == nil {
+		cachedStockForDay = make(map[string]Stock)
+	}
+	cachedResult, cacheHit := cachedStockForDay[symbol + TimeToString(time)]
+	if cacheHit {
+		fmt.Println("****** CACHE HIT")
+		return cachedResult
+	}
+
+	session := connect()
+	defer session.Close()
+	c := getStockyDailyCollection(session)
+
+	var result Stock
+	err := c.Find(bson.M{"symbol": symbol, "date": time}).One(&result)
+	if err != nil {
+		fmt.Println(err)
+		return Stock{}
+	}
+	cachedStockForDay[symbol + TimeToString(time)] = result
+	return result
+}
+
+func GetPricesForStockByDay(symbol string) map[string]Stock {
+	stocks := GetPricesForStock(symbol)
+	stocksByDay := make(map[string]Stock, len(stocks))
+	for _, stock := range stocks {
+		stocksByDay[TimeToString(stock.Date)] = stock
+	}
+
+	return stocksByDay
 }
 
 func AddStockDay(s Stock) {
@@ -68,10 +167,12 @@ func BatchAddStockDay(stocks []Stock) {
 
 	bulk := c.Bulk()
 
+	/*
 	for _, s := range stocks {
 		bulk.RemoveAll(bson.M{"symbol": s.Symbol, "date": s.Date})
 	}
 	bulk.Run()
+	*/
 
 	bulk = c.Bulk()
 	for _, s := range stocks {

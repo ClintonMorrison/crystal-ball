@@ -6,7 +6,6 @@ import (
 )
 
 func SaveStockData(symbol string) {
-	fmt.Println("Fetching data for " + symbol)
 	stockDays, err := trading.GetDailyStockData(symbol)
 	if err != nil {
 		panic(err)
@@ -26,10 +25,13 @@ func SaveCompanies(companiesBySymbol map[string]trading.Company) {
 }
 
 func main() {
-	companiesBySymbol := trading.GetCompanies()
+	companiesBySymbol := trading.ParseCompaniesFromCSV()
 	SaveCompanies(companiesBySymbol)
 
+	index := 0
 	for symbol, _ := range companiesBySymbol {
+		index += 1
+		fmt.Printf("Fetching data for %s [%d of %d] --> ", symbol, index, len(companiesBySymbol))
 		SaveStockData(symbol)
 	}
 }
