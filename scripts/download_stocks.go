@@ -2,30 +2,30 @@ package scripts
 
 import (
 	"fmt"
-	"stock-analysis/trading"
+	"stock-analysis/data"
 )
 
 func SaveStockData(symbol string) {
-	stockDays, err := trading.GetDailyStockData(symbol)
+	stockDays, err := data.GetDailyStockData(symbol)
 	if err != nil {
 		panic(err)
 	}
 
-	trading.BatchAddStockDailySummary(stockDays)
+	data.BatchAddStockDailySummary(stockDays)
 }
 
-func SaveCompanies(companiesBySymbol map[string]trading.Company) {
+func SaveCompanies(companiesBySymbol map[string]data.Company) {
 	fmt.Println("Saving companies...")
-	var companies []trading.Company
+	var companies []data.Company
 	for _, company := range companiesBySymbol {
 		companies = append(companies, company)
 	}
 
-	trading.BatchAddCompany(companies)
+	data.BatchAddCompany(companies)
 }
 
 func main() {
-	companiesBySymbol := trading.ParseCompaniesFromCSV()
+	companiesBySymbol := data.ParseCompaniesFromCSV()
 	SaveCompanies(companiesBySymbol)
 
 	index := 0

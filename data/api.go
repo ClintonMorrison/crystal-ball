@@ -1,4 +1,4 @@
-package main
+package data
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"stock-analysis/config"
 )
 
 // Idea
@@ -49,7 +50,7 @@ func request(f string, symbol string, outputsize string) ([]byte, error) {
 		f,
 		symbol,
 		outputsize,
-		ApiKey)
+		config.ApiKey)
 	fmt.Println(url)
 	resp, err := http.Get(url)
 	if err != nil {

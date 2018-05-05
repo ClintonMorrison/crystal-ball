@@ -1,8 +1,10 @@
-package main
+package experiment
 
 import (
 	"fmt"
 	"time"
+	"stock-analysis/data"
+	"stock-analysis/util"
 )
 
 type Portfolio map[string]float64 // symbol => quantity held
@@ -15,13 +17,13 @@ type ExperimentState struct {
 }
 
 func (state ExperimentState) lookupPrice(symbol string, date time.Time) float64 {
-	price := GetDailyStockSummaryData().forSymbolOnDay(symbol, date).Close // GetDailySummaryForStock(symbol, date).Close // state.Params.DailyStocksBySymbol[symbol][dateString].Close
+	price := data.GetDailyStockSummaryData().ForSymbolOnDay(symbol, date).Close // GetDailySummaryForStock(symbol, date).Close // state.Params.DailyStocksBySymbol[symbol][dateString].Close
 
 	tries := 0
 
 	for price == 0 && tries < 10 {
 		tries++
-		price = GetDailySummaryForStock(symbol, date.AddDate(0, 0, -1*tries)).Close
+		price = data.GetDailySummaryForStock(symbol, date.AddDate(0, 0, -1*tries)).Close
 	}
 
 	return price
@@ -70,7 +72,7 @@ func (state ExperimentState) reportSummary() {
 func (state ExperimentState) applyOrder(order Order) ExperimentState {
 	pricePerShare := state.lookupPrice(order.Symbol, state.Day)
 	if pricePerShare == 0 {
-		fmt.Println("WARN: Skipping trade. Price is 0 for " + order.Symbol + ", " + TimeToString(state.Day))
+		fmt.Println("WARN: Skipping trade. Price is 0 for " + order.Symbol + ", " + util.TimeToString(state.Day))
 
 		// Stock no longer exists? do nothing
 		return state

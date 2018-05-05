@@ -1,14 +1,15 @@
-package main
+package data
 
 import (
 	"fmt"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"time"
+	"stock-analysis/config"
 )
 
 func connect() *mgo.Session {
-	session, err := mgo.Dial(MongoURL)
+	session, err := mgo.Dial(config.MongoURL)
 	if err != nil {
 		panic(err)
 	}

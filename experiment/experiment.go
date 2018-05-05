@@ -1,8 +1,9 @@
-package main
+package experiment
 
 import (
 	"fmt"
 	"time"
+	"stock-analysis/data"
 )
 
 type ExperimentParams struct {
@@ -10,7 +11,7 @@ type ExperimentParams struct {
 	StartDay          time.Time
 	EndDay            time.Time
 	TransactionFee    float64
-	CompaniesBySymbol map[string]Company
+	CompaniesBySymbol map[string]data.Company
 }
 
 type Strategy func(state *ExperimentState) []Order
