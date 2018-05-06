@@ -34,3 +34,8 @@ func CountAboveThreshold(threshold float64, nums []float64) int {
 
 	return count
 }
+
+func AsPercent(numerator int, denominator int) float64 {
+	return 100.0 * float64(numerator) / float64(denominator)
+}
+
