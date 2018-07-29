@@ -41,7 +41,7 @@ type DailyStockResponse struct {
 	TimeSeriesDaily map[string]RawDailyStock `json:"Time Series (Daily)"`
 }
 
-func request(f string, symbol string, outputsize string) ([]byte, error) {
+func request(f string, symbol string, outputsize string, tries int) ([]byte, error) {
 	baseURL := "https://www.alphavantage.co"
 
 	url := fmt.Sprintf(""+
@@ -59,8 +59,8 @@ func request(f string, symbol string, outputsize string) ([]byte, error) {
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	if err != nil || len(body) == 0 {
+		panic("request failed for " + f + " " + symbol)
 	}
 
 	return body, nil
@@ -93,7 +93,7 @@ func TransformRawStock(symbol string, date string, rawStock RawDailyStock) Stock
 }
 
 func GetDailyStockData(symbol string) ([]StockSummary, error) {
-	body, err := request("TIME_SERIES_DAILY_ADJUSTED", symbol, "full") // "full" "compact"
+	body, err := request("TIME_SERIES_DAILY_ADJUSTED", symbol, "full", 10) // "full" "compact"
 
 	if err != nil {
 		return nil, err
@@ -110,6 +110,13 @@ func GetDailyStockData(symbol string) ([]StockSummary, error) {
 	for date, rawStock := range response.TimeSeriesDaily {
 		stock := TransformRawStock(response.MetaData.Symbol, date, rawStock)
 		stocks = append(stocks, stock)
+	}
+
+	if len(stocks) == 0 {
+		fmt.Println("waiting a bit: got no data for " + symbol)
+		time.Sleep(60 * time.Second)
+		fmt.Println("trying again: " + symbol)
+		return GetDailyStockData(symbol)
 	}
 
 	// fmt.Printf("%#v", response)

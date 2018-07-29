@@ -37,9 +37,9 @@ func MovingAverageTrendFollowing(state *experiment.ExperimentState) []experiment
 }
 
 func PredictDirectionWithMovingAverage(summary data.StockSummary) string {
-	if summary.MovingAverage(5) > summary.MovingAverage(30) {
+	if summary.MovingAverage(2) > summary.MovingAverage(4) {
 		return "UP"
-	} else if summary.MovingAverage(5) < summary.MovingAverage(30) {
+	} else if summary.MovingAverage(2) < summary.MovingAverage(4) {
 		return "DOWN"
 	}
 

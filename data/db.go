@@ -98,16 +98,24 @@ func AddDailyStockSummary(s StockSummary) {
 	}
 }
 
-func BatchAddStockDailySummary(stocks []StockSummary) {
+func BatchAddStockDailySummary(symbol string, stocks []StockSummary) {
 	session := connect()
 	defer session.Close()
 	c := getStockyDailyCollection(session)
+	c.RemoveAll(bson.M{"symbol": symbol})
 
 	bulk := c.Bulk()
-
-	bulk = c.Bulk()
-	for _, s := range stocks {
+	for i, s := range stocks {
 		bulk.Insert(s)
+
+		if i % 100 == 0 {
+			_, err := bulk.Run()
+			if err != nil {
+				panic(err)
+			}
+			bulk = c.Bulk()
+		}
+
 	}
 
 	_, err := bulk.Run()

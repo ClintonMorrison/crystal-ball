@@ -1,17 +1,20 @@
-package scripts
+package main
 
 import (
 	"fmt"
 	"stock-analysis/data"
+	// "time"
 )
 
 func SaveStockData(symbol string) {
 	stockDays, err := data.GetDailyStockData(symbol)
+	// time.Sleep(20 * time.Second) // Max of 5 requests per minute
+
 	if err != nil {
 		panic(err)
 	}
 
-	data.BatchAddStockDailySummary(stockDays)
+	data.BatchAddStockDailySummary(symbol, stockDays)
 }
 
 func SaveCompanies(companiesBySymbol map[string]data.Company) {
@@ -25,6 +28,7 @@ func SaveCompanies(companiesBySymbol map[string]data.Company) {
 }
 
 func main() {
+
 	companiesBySymbol := data.ParseCompaniesFromCSV()
 	SaveCompanies(companiesBySymbol)
 
