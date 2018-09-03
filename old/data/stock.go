@@ -49,6 +49,7 @@ func (summary StockSummary) GetPercentVolatility() float64 {
 	return (summary.High - summary.Low) / summary.Open
 }
 
+/*
 func (summary StockSummary) GetVelocity(days int) float64 {
 	summaries := GetDailyStockSummaryData().ForSymbolOnOtherDays(summary.Symbol, summary.Date, -days)
 
@@ -71,6 +72,7 @@ func (summary StockSummary) MovingAverage(days int) float64 {
 
 	return util.Avg(closeValues)
 }
+*/
 
 func (s1 StockSummary) Distance(s2 StockSummary) float64 {
 	x1 := s2.GetPercentChange() - s1.GetPercentChange()

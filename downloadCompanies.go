@@ -1,7 +1,6 @@
 package main
 
 import (
-  "database/sql"
   "fmt"
 	"encoding/csv"
 	"io"
@@ -9,23 +8,11 @@ import (
 	"strconv"
   "net/http"
   "bytes"
+  "strings"
 )
 
 
-type Company struct {
-	Symbol       string
-	Name         string
-	LastSale     float64
-	MarketCap    float64
-	ADR          string
-	TSO          string
-	IPOYear      int64
-	Sector       string
-	Industry     string
-	SummaryQuote string
-}
-
-func ParseCompaniesFromCSV(ioReader io.Reader) map[string]Company {
+func parseCompaniesFromCSV(ioReader io.Reader) map[string]Company {
 	companies := make(map[string]Company)
 
 	reader := csv.NewReader(ioReader)
@@ -44,16 +31,16 @@ func ParseCompaniesFromCSV(ioReader io.Reader) map[string]Company {
 		} else if err != nil {
 			panic(err)
 		}
-		symbol := record[0]
-		name := record[1]
+		symbol := strings.TrimSpace(record[0])
+		name := strings.TrimSpace(record[1])
 		lastTrade, _ := strconv.ParseFloat(record[2], 64)
 		marketCap, _ := strconv.ParseFloat(record[3], 64)
-		adr := record[4]
-		tso := record[5]
+		adr := strings.TrimSpace(record[4])
+		tso := strings.TrimSpace(record[5])
 		ipoyear, _ := strconv.ParseInt(record[6], 10, 64)
-		sector := record[6]
-		industry := record[7]
-		summaryQuote := record[8]
+		sector := strings.TrimSpace(record[6])
+		industry := strings.TrimSpace(record[7])
+		summaryQuote := strings.TrimSpace(record[8])
 
 		company := Company{
 			symbol,
@@ -72,44 +59,6 @@ func ParseCompaniesFromCSV(ioReader io.Reader) map[string]Company {
 	return companies
 }
 
-func insertCompany(db *sql.DB, company Company) {
-  rows, err := db.Query(`
-    INSERT INTO companies
-    (
-      ticker, name, industry, last_sale, market_cap, adr,
-      tso, ipo_year, sector, summary_quote
-    )
-    
-    VALUES (
-      $1,
-      $2,
-      $3,
-      $4,
-      $5,
-      $6,
-      $7,
-      $8,
-      $9,
-      $10
-    )`,
-    company.Symbol,
-    company.Name,
-    company.Industry,
-    company.LastSale,
-    company.MarketCap,
-    company.ADR,
-    company.TSO,
-    company.IPOYear,
-    company.Sector,
-    company.SummaryQuote)
-
-  if err != nil {
-    fmt.Println(err)
-  } else {
-    defer rows.Close()
-  }
-}
-
 func main() {
   url := "http://www.nasdaq.com/screening/companies-by-industry.aspx?render=download"
   resp, err := http.Get(url)
@@ -125,16 +74,13 @@ func main() {
   }
 
   reader := bytes.NewReader(body)
-  companies := ParseCompaniesFromCSV(reader)
+  companies := parseCompaniesFromCSV(reader)
 
   db := GetHandle()
 
   for ticker, company := range companies {
     fmt.Printf("Inserting %s\n", ticker)
-    insertCompany(db, company)
+    InsertCompany(db, company)
   }
-
-  // db := GetHandle()
-  // fmt.Printf("%v", rows[0])
 }
 
