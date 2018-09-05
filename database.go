@@ -14,7 +14,6 @@ func GetHandle() *sql.DB {
      DB_HOST,
      DB_NAME)
 
-  fmt.Println("OPENING!")
   db, err := sql.Open("postgres", connStr)
 
   if err != nil {

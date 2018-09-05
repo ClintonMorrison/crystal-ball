@@ -32,6 +32,8 @@ func parseCompaniesFromCSV(ioReader io.Reader) map[string]Company {
 			panic(err)
 		}
 		symbol := strings.TrimSpace(record[0])
+    symbol = strings.Split(symbol, "^")[0]
+    symbol = strings.Split(symbol, ".")[0]
 		name := strings.TrimSpace(record[1])
 		lastTrade, _ := strconv.ParseFloat(record[2], 64)
 		marketCap, _ := strconv.ParseFloat(record[3], 64)

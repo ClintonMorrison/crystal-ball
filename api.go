@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+  "errors"
+  "strings"
 )
 
 type ResponseMetaData struct {
@@ -104,6 +106,11 @@ func GetWeeklyQuotes(symbol string) ([]Quote, error) {
 	}
 
 	if len(stocks) == 0 {
+    
+    if strings.Contains(string(body), "Invalid API call") {
+      return nil, errors.New("invalid API call, ticker may not exist: " + symbol)
+    }
+
 		fmt.Println("waiting a bit: got no data for " + symbol)
 		time.Sleep(60 * time.Second)
 		fmt.Println("trying again: " + symbol)
