@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 //	"math"
+	"sort"
+	"strings"
 )
 
 
@@ -11,8 +13,8 @@ import (
 //
 type NGramSet struct {
 	N int
-	Total int64
-	NGrams map[string]int64 // pattern => count
+	Total int
+	NGrams map[string]int // pattern => count
 }
 
 func (set *NGramSet) Add(ngram string) {
@@ -28,17 +30,51 @@ func (set *NGramSet) Merge(otherSet NGramSet) {
 }
 
 func (set NGramSet) Print() {
-	for key := range set.NGrams {
-		fmt.Printf("%s --> %d\n", key, set.NGrams[key])
+	orderedKeys := set.OrderedNgrams()
+	for _, key := range orderedKeys {
+		fmt.Printf("%s --> %d [%%%2.2f]\n", key, set.NGrams[key], set.GetFreq(key) * 100.0)
 	}
+
 }
 
 func (set NGramSet) GetFreq(ngram string) float64 {
 	return float64(set.NGrams[ngram]) / float64(set.Total)
 }
 
+func (set *NGramSet) OrderedNgrams() []string {
+	counts := make([]int, 0, len(set.NGrams))
+	for _, count := range set.NGrams {
+		counts = append(counts, count)
+	}
+	sort.Ints(counts)
+
+	ngramsByCount := make(map[int][]string, 0)
+	for ngram, count := range set.NGrams {
+		if ngramsByCount[count] == nil {
+			ngramsByCount[count] = make([]string, 0)
+		}
+		ngramsByCount[count] = append(ngramsByCount[count], ngram)
+	}
+
+
+	results := make([]string, 0)
+
+	includedCounts := make(map[int]bool, 0)
+
+	for _, count := range counts {
+		if includedCounts[count] {
+			continue
+		}
+		includedCounts[count] = true
+
+		results = append(results, ngramsByCount[count]...)
+	}
+
+	return results
+}
+
 func CreateNGramSet(n int) *NGramSet {
-	return &NGramSet{n, 0, make(map[string]int64)}
+	return &NGramSet{n, 0, make(map[string]int)}
 }
 
 
@@ -82,9 +118,58 @@ func (universe NGramUniverse) Generate(m int) string {
 func (universe NGramUniverse) Print() {
 	n := 1
 	for n <= universe.MaxN {
+		fmt.Println()
 		universe.NgramsByN[n].Print()
 		n++
 	}
+}
+
+func (universe *NGramUniverse) PrintProbabilitiesOfCompletion(s string)  {
+	alphabetCharacters := universe.GetAlphabetCharacters()
+
+	fmt.Printf("\n\n%s\n-----------\n", s)
+
+	for _, char := range alphabetCharacters {
+		fmt.Printf("%s -> %s   %2.2f%%\n", s, char, 100.0 * universe.GetProbabilityOfCompletion(s, char))
+	}
+}
+
+func (universe *NGramUniverse) ProbableCompletion(s string) (next string, prob float64)  {
+	alphabetCharacters := universe.GetAlphabetCharacters()
+	bestCompletion := ""
+	bestCompletionProb := 0.0
+
+	for _, char := range alphabetCharacters {
+		prob := universe.GetProbabilityOfCompletion(s, char)
+		if prob > bestCompletionProb {
+			bestCompletion = char
+			bestCompletionProb = prob
+		}
+	}
+
+	return bestCompletion, bestCompletionProb
+}
+
+func (universe *NGramUniverse) GetProbabilityOfCompletion(s string, candidate string) float64 {
+	if len(s) >= universe.MaxN {
+		panic("string too long to make prediction")
+	}
+
+	total := 0
+
+	set := universe.NgramsByN[len(s)]
+	for ngram, count := range set.NGrams {
+		if strings.HasPrefix(ngram, s) {
+			total += count
+		}
+	}
+
+	if total == 0 {
+		fmt.Println("[WARN] no ngrams have prefix " + s)
+		return 0
+	}
+
+	return float64(universe.NgramsByN[len(s) + 1].NGrams[s + candidate])/float64(total)
 }
 
 func (universe NGramUniverse) GetCompletionScore(s string, nextChar string) float64 {
@@ -168,7 +253,7 @@ func CreateUniverse(maxN int) NGramUniverse {
 
 func CountNGrams(s string, n int) NGramSet {
 	ngrams := ExtractNGrams(s, n)
-	set := NGramSet{n, 0, make(map[string]int64)}
+	set := NGramSet{n, 0, make(map[string]int)}
 
 	for _, ngram := range ngrams {
 		set.Add(ngram)

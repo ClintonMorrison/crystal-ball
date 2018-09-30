@@ -42,6 +42,16 @@ func (q *Quote) GetPercentVolatility() float64 {
 func (q *Quote) GetGrade() string {
   change := q.GetPercentChange()
 
+  if change > 0.01 {
+  	return "U"
+	} else if change < -0.01 {
+		return "D"
+	} else {
+		return "_"
+	}
+
+
+
   if change >= 0.05 {
     return "A"
   } else if change >= 0.025 {
@@ -55,6 +65,31 @@ func (q *Quote) GetGrade() string {
   } else {
     return "F"
   }
+}
+
+func rowsToQuotes(rows *sql.Rows) []*Quote {
+	quotes := make([]*Quote, 0)
+	for rows.Next() {
+		quote := Quote{}
+		err := rows.Scan(
+			&quote.Ticker,
+			&quote.Date,
+			&quote.Open,
+			&quote.High,
+			&quote.Low,
+			&quote.Close,
+			&quote.AdjustedClose,
+			&quote.Volume,
+			&quote.Dividend)
+
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		quotes = append(quotes, &quote)
+	}
+
+	return quotes
 }
 
 func rowToQuote(row *sql.Row) (*Quote, error) {
@@ -143,9 +178,7 @@ func GetQuoteForTickerOnWeek(db *sql.DB, ticker string, date time.Time) (*Quote,
 }
 
 
-func GetAllQuotesForTicker(db *sql.DB, ticker string) (*Quote, error) {
-  quotes := make([]*Quote, 0)
-
+func GetAllQuotesForTicker(db *sql.DB, ticker string) ([]*Quote) {
   rows, err := db.Query(`
     SELECT
       ticker,
@@ -162,7 +195,13 @@ func GetAllQuotesForTicker(db *sql.DB, ticker string) (*Quote, error) {
     ORDER BY date ASC`,
     ticker)
 
-  return rowToQuote(row)
+  if err != nil {
+  	panic(err)
+	}
+
+	defer rows.Close()
+
+	return rowsToQuotes(rows)
 }
 
 
