@@ -66,7 +66,7 @@ func EvaluateNGramModels () {
 				trainingDocument := trainingDocuments[ticker]
 				trainingEnd := len(trainingDocument)
 				nextChar := trainingEnd + 1
-				if len(trainingDocument) < maxN {
+				if len(trainingDocument) < maxN || len(document) < len(trainingDocument) + 1  {
 					fmt.Printf("[WARN] skipping %s because not enough training data\n", ticker)
 					continue
 				}
