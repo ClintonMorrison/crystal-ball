@@ -2,8 +2,8 @@ package stategies
 
 import (
 	"time"
-	"stock-analysis/experiment"
-	"stock-analysis/data"
+	"stockAnalysis/experiment"
+	"stockAnalysis/data"
 )
 
 func OptimalDayTradingStategy(state *experiment.ExperimentState) []experiment.Order {

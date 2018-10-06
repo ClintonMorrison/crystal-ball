@@ -5,7 +5,7 @@ import (
 	"time"
 	"fmt"
 	"math"
-	"stock-analysis/util"
+	"stockAnalysis/util"
 )
 
 type StockSummary struct {

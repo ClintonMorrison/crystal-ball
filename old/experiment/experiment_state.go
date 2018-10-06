@@ -3,8 +3,8 @@ package experiment
 import (
 	"fmt"
 	"time"
-	"stock-analysis/data"
-	"stock-analysis/util"
+	"stockAnalysis/data"
+	"stockAnalysis/util"
 )
 
 type Portfolio map[string]float64 // symbol => quantity held

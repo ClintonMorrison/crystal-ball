@@ -5,7 +5,7 @@ import (
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"time"
-	"stock-analysis/old/config"
+	"stockAnalysis/old/config"
 )
 
 func connect() *mgo.Session {

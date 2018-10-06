@@ -1,8 +1,8 @@
 package stategies
 
 import (
-	"stock-analysis/experiment"
-	"stock-analysis/data"
+	"stockAnalysis/experiment"
+	"stockAnalysis/data"
 )
 
 func MovingAverageTrendFollowing(state *experiment.ExperimentState) []experiment.Order {

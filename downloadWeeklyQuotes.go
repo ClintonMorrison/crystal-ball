@@ -1,10 +1,10 @@
-package scripts
+package main
 
 import (
   "fmt"
 )
 
-func main() {
+func DownloadWeeklyQuotes() {
   db := GetHandle()
   tickers := GetAllCompanyTickers(db)
   start := false

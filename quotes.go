@@ -204,4 +204,37 @@ func GetAllQuotesForTicker(db *sql.DB, ticker string) ([]*Quote) {
 	return rowsToQuotes(rows)
 }
 
+func GetLatestQuotesForTicker(db *sql.DB, ticker string, limit int) ([]*Quote) {
+	rows, err := db.Query(`
+    SELECT
+      ticker,
+      date,
+      open,
+      high,
+      low,
+      close,
+      adjusted_close,
+      volume,
+      dividend FROM
+    quotes WHERE
+      ticker = $1
+    ORDER BY date DESC 
+    LIMIT $2`,
+		ticker,
+		limit)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+
+	results := rowsToQuotes(rows)
+	reversed := make([]*Quote, len(results))
+	for i, result := range results {
+		reversed[len(results) - i - 1] = result
+	}
+
+	return reversed
+}
 

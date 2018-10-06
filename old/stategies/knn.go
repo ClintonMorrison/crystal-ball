@@ -3,9 +3,9 @@ package stategies
 import (
 	"sort"
 	"time"
-	"stock-analysis/data"
-	"stock-analysis/util"
-	"stock-analysis/experiment"
+	"stockAnalysis/data"
+	"stockAnalysis/util"
+	"stockAnalysis/experiment"
 )
 
 func NearestPreviousSummaries(summary data.StockSummary, k int) []data.StockSummary {

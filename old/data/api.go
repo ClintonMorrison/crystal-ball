@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"stock-analysis/old/config"
+	"stockAnalysis/old/config"
 )
 
 // Idea

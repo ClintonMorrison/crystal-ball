@@ -10,7 +10,6 @@ func getSplitGradeString(quotes []*Quote, splitTime time.Time) (string, string) 
 	gradeString := ""
 	trainingString := ""
 
-
 	for _, quote := range quotes {
 		grade := quote.GetGrade()
 		gradeString = gradeString + grade

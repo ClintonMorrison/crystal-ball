@@ -1,4 +1,4 @@
-package scripts
+package main
 
 import (
   "fmt"
@@ -61,7 +61,7 @@ func parseCompaniesFromCSV(ioReader io.Reader) map[string]Company {
 	return companies
 }
 
-func main() {
+func DownloadCompanies() {
   url := "http://www.nasdaq.com/screening/companies-by-industry.aspx?render=download"
   resp, err := http.Get(url)
 

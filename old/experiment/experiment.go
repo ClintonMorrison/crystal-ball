@@ -3,7 +3,7 @@ package experiment
 import (
 	"fmt"
 	"time"
-	"stock-analysis/data"
+	"stockAnalysis/data"
 )
 
 type ExperimentParams struct {

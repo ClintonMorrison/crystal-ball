@@ -1,10 +1,10 @@
 package main
 
 import (
-	"stock-analysis/experiment"
-	"stock-analysis/util"
-	"stock-analysis/data"
-	"stock-analysis/stategies"
+	"stockAnalysis/experiment"
+	"stockAnalysis/util"
+	"stockAnalysis/data"
+	"stockAnalysis/stategies"
 	"fmt"
 )
 

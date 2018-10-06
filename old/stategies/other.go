@@ -3,8 +3,8 @@ package stategies
 import (
 	"math"
 	"fmt"
-	"stock-analysis/data"
-	"stock-analysis/experiment"
+	"stockAnalysis/data"
+	"stockAnalysis/experiment"
 )
 
 func scoreStock(stock data.StockSummary) float64 {
