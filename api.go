@@ -111,6 +111,10 @@ func GetWeeklyQuotes(symbol string) ([]Quote, error) {
       return nil, errors.New("invalid API call, ticker may not exist: " + symbol)
     }
 
+		if string(body) == "{}" {
+			return nil, errors.New("empty response, ticker may not exist: " + symbol)
+		}
+
 		fmt.Println("waiting a bit: got no data for " + symbol)
 		time.Sleep(60 * time.Second)
 		fmt.Println("trying again: " + symbol)

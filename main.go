@@ -26,6 +26,16 @@ func main() {
 		false,
 		"Download list of current companies")
 
+	printNgrams := flag.Bool(
+		"print-ngrams",
+		false,
+		"Prints n-gram frequencies for aggregate stock data")
+
+	startTicker := flag.String(
+		"start-ticker",
+		"",
+		"Ticker to start at")
+
 	flag.Parse()
 
 	if *predictNextWeek {
@@ -33,18 +43,12 @@ func main() {
 	} else if *evaluateModels {
 		EvaluateNGramModels()
 	} else if *downloadWeeklyQuotes {
-		DownloadWeeklyQuotes()
+		DownloadWeeklyQuotes(*startTicker)
 	} else if *downloadCompanies {
 		DownloadCompanies()
+	} else if *printNgrams {
+		PrintNgrams()
+	} else {
+		flag.Usage()
 	}
-
-	flag.Usage()
-
-
-	// Print Stock Price
-
-	// Download Companies
-
-	// Download Quotes
-
 }

@@ -32,7 +32,7 @@ func (set *NGramSet) Merge(otherSet NGramSet) {
 func (set NGramSet) Print() {
 	orderedKeys := set.OrderedNgrams()
 	for _, key := range orderedKeys {
-		fmt.Printf("%s --> %d [%%%2.2f]\n", key, set.NGrams[key], set.GetFreq(key) * 100.0)
+		fmt.Printf("%s --> %d [%2.2f%%]\n", key, set.NGrams[key], set.GetFreq(key) * 100.0)
 	}
 
 }

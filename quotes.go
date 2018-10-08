@@ -43,28 +43,12 @@ func (q *Quote) GetGrade() string {
   change := q.GetPercentChange()
 
   if change > 0.01 {
-  	return "U"
+  	return "A"
 	} else if change < -0.01 {
-		return "D"
+		return "B"
 	} else {
-		return "_"
+		return "C"
 	}
-
-
-
-  if change >= 0.05 {
-    return "A"
-  } else if change >= 0.025 {
-    return "B"
-  } else if change >= 0 {
-    return "C"
-  } else if change >= -0.025 {
-    return "D"
-  } else if change >= -0.05 {
-    return "E"
-  } else {
-    return "F"
-  }
 }
 
 func rowsToQuotes(rows *sql.Rows) []*Quote {

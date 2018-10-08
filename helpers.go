@@ -76,3 +76,14 @@ func PrintSequenceStats(values []float64) {
     current -= bucketSize
   }
 }
+
+func GetGradeString(quotes []*Quote) string {
+  gradeString := ""
+
+  for _, quote := range quotes {
+    grade := quote.GetGrade()
+    gradeString = gradeString + grade
+  }
+
+  return gradeString
+}

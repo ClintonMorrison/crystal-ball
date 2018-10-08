@@ -4,15 +4,15 @@ import (
   "fmt"
 )
 
-func DownloadWeeklyQuotes() {
+func DownloadWeeklyQuotes(startTicker string) {
   db := GetHandle()
   tickers := GetAllCompanyTickers(db)
-  start := false
-  lastSymbol := "AKO"
+  start := startTicker == ""
+
   for i, ticker := range tickers {
     fmt.Printf("[%4d/%4d] - %s\n", i, len(tickers), ticker)
 
-    if ticker == lastSymbol {
+    if !start && ticker == startTicker {
       start = true
     }
 

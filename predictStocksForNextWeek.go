@@ -2,26 +2,15 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
-
-func getGradeString(quotes []*Quote) string {
-	gradeString := ""
-
-	for _, quote := range quotes {
-		grade := quote.GetGrade()
-		gradeString = gradeString + grade
-	}
-
-	return gradeString
-}
-
 
 
 func PrintPredictionsForNextWeek() {
 	maxN := 3
 	db := GetHandle()
 
-	tickers := GetAllCompanyTickers(db)[:1000]
+	tickers := GetAllCompanyTickers(db)
 
 	ngramModel := CreateNGramModel(GradeQuoteClassifier, "", maxN)
 
@@ -34,11 +23,15 @@ func PrintPredictionsForNextWeek() {
 		}
 
 		company := GetCompanyByTicker(db, ticker)
-		document := getGradeString(quotes)
+		document := GetGradeString(quotes)
 		ngramModel.AddCase(company, document)
 	}
 
 	fmt.Printf("\n\n")
+
+	bestTickers := make([]string, 0)
+	bestProbability := 0.0
+
 
 	for _, ticker := range tickers {
 		company := GetCompanyByTicker(db, ticker)
@@ -48,9 +41,20 @@ func PrintPredictionsForNextWeek() {
 			continue
 		}
 
-		recentGrades := getGradeString(quotes)
+		recentGrades := GetGradeString(quotes)
 		predictedGrade, probability := ngramModel.PredictNext(company, recentGrades)
 		latestQuote := quotes[len(quotes) - 1]
+
+		if predictedGrade == "A" {
+			if probability > bestProbability {
+				bestTickers = make([]string, 0)
+				bestTickers = append(bestTickers, ticker)
+				bestProbability = probability
+			} else if probability == bestProbability {
+				bestTickers = append(bestTickers, ticker)
+			}
+
+		}
 
 		fmt.Printf("[PREDICT] %6s @ %s \t\t|\t\t%s -> %s (%2.2f%%)\n",
 			ticker,
@@ -58,6 +62,8 @@ func PrintPredictionsForNextWeek() {
 			recentGrades,
 			predictedGrade,
 			probability*100)
-		// ngramModel.AddCase(company, document)
 	}
+
+	fmt.Printf("\n\nBest probability: %2.2f%%\n", bestProbability * 100)
+	fmt.Printf("Tickers: %s\n", strings.Join(bestTickers, ", "))
 }
