@@ -9,7 +9,7 @@ Usage of ./stockAnalysis:
         Download list of current companies
   -download-quotes
         Download weekly stock price data
-  -evaluate-ngram-models
+  -evaluate-ngram-model-params
         Evaluate different parameters for building n-gram models
   -predict
         Predict stock changes for the next week
