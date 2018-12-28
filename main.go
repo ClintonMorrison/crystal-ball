@@ -6,10 +6,15 @@ import (
 
 func main() {
 
-	evaluateModels := flag.Bool(
-		"evaluate-ngram-models",
+	evaluateModelsParams := flag.Bool(
+		"evaluate-ngram-model-params",
 		false,
 		"Evaluate different parameters for building n-gram models")
+
+	evaluateNgramModelOverTime := flag.Bool(
+		"evaluate-ngram-model-over-time",
+		false,
+		"Evaluates an ngram model with n=3 over time")
 
 	predictNextWeek := flag.Bool(
 		"predict",
@@ -34,13 +39,13 @@ func main() {
 	startTicker := flag.String(
 		"start-ticker",
 		"",
-		"Ticker to start at")
+		"Flag specifying ticker to start at (for -download-quotes)")
 
 	flag.Parse()
 
 	if *predictNextWeek {
 		PrintPredictionsForNextWeek()
-	} else if *evaluateModels {
+	} else if *evaluateModelsParams {
 		EvaluateNGramModels()
 	} else if *downloadWeeklyQuotes {
 		DownloadWeeklyQuotes(*startTicker)
@@ -48,6 +53,8 @@ func main() {
 		DownloadCompanies()
 	} else if *printNgrams {
 		PrintNgrams()
+	} else if *evaluateNgramModelOverTime {
+		EvaluateNGramModelOverTime()
 	} else {
 		flag.Usage()
 	}
