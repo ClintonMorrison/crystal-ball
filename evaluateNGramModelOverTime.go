@@ -12,7 +12,7 @@ func EvaluateNGramModelOverTime () {
 
 	db := GetHandle()
 
-	tickers := GetAllCompanyTickers(db)[:1]
+	tickers := GetAllCompanyTickers(db)
 	dates := make([]string, 0)
 
 	fmt.Print(tickers)
